@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Adbloc-king</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin-top: 50px;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 18px;
+            cursor: pointer;
+        }
+    </style>
+    <script>
+        let blockingEnabled = false;
+        const restrictedWords = ["Movies", "Genre", "Cast", "Director", "Ibomma", "TV Shows", "TV Series", "category", "country", "Porn", "Sex", "Step brother", "Step mother", "Step Sister", "Sex Scene", "Sex mms", "Desi sex", "GF sex", "Fuck", "Fucks", "Hotel Sex", "Village Sex", "Aunty sex", "Download movie", "Torrent", "Ullu", "Lulu", "Incestflix", "Taboo", "Incest", "Gf-BF sex mms", "BF fucks", "Hard Sex", "Pussy lick", "Sex moaning", "Doggy style", "DMCA", "HD", "Watch", "IMDB", "Free movies"];
+        const adKeywords = ["ads", "banner", "popup"];
+
+        function toggleBlocking() {
+            blockingEnabled = !blockingEnabled;
+            document.getElementById("toggleButton").innerText = blockingEnabled ? "Disable Blocking" : "Enable Blocking";
+        }
+
+        function checkForRestrictedWords() {
+            let pageText = document.body.innerText.toLowerCase();
+            return restrictedWords.some(word => pageText.includes(word.toLowerCase()));
+        }
+
+        function removeAds() {
+            document.querySelectorAll("iframe, .ad, .ads, .banner, .popup").forEach(ad => ad.remove());
+            document.querySelectorAll("div, span, p, a").forEach(el => {
+                if (adKeywords.some(keyword => el.innerText.toLowerCase().includes(keyword))) {
+                    el.remove();
+                }
+            });
+        }
+
+        function blockNewTabs(event) {
+            if (!blockingEnabled) return;
+            let target = event.target.closest('a');
+            if (target && target.href && target.target === "_blank") {
+                if (checkForRestrictedWords()) {
+                    event.preventDefault();
+                    alert("Blocked: This page contains restricted content.");
+                }
+            }
+        }
+
+        function preventPopupWindows() {
+            let openWindow = window.open;
+            window.open = function(url, name, specs) {
+                if (blockingEnabled && checkForRestrictedWords()) {
+                    alert("Blocked: Attempt to open restricted content.");
+                    return null;
+                }
+                return openWindow.apply(this, arguments);
+            };
+        }
+
+        function monitorMutations() {
+            const observer = new MutationObserver(() => {
+                removeAds();
+            });
+            observer.observe(document.body, { childList: true, subtree: true });
+        }
+
+        document.addEventListener('click', blockNewTabs, true);
+        setInterval(removeAds, 2000);
+        preventPopupWindows();
+        monitorMutations();
+    </script>
+</head>
+<body>
+    <h1>Adbloc-king</h1>
+    <button id="toggleButton" onclick="toggleBlocking()">Enable Blocking</button>
+</body>
+</html>
